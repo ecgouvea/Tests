@@ -1,4 +1,4 @@
-package tests.tests.string.substring;
+package tests.string.substring;
 
 public class Main {
 
