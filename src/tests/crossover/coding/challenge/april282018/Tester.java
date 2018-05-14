@@ -4,7 +4,9 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.math.*;
+import java.util.function.Consumer;
 import java.util.regex.*;
+import java.util.stream.Stream;
 
 public class Tester {
 
@@ -13,7 +15,32 @@ public class Tester {
      * DO NOT MODIFY anything outside this method.
      */
     static int[] balancedOrNot(String[] expressions, int[] maxReplacements) {
-        return null;
+        List<Integer> list = new LinkedList<>();
+        int[] result = null;
+
+        System.out.println("------------------------------------ begin print ------------------------------------");
+
+        for (int i = 0; i < expressions.length; i++) {
+            String expr = expressions[i];
+            int repl = maxReplacements[i];
+
+            if (expr.endsWith("<")) {
+                list.add(0);
+            } else {
+
+            }
+
+        }
+
+        System.out.println("------------------------------------ end print --------------------------------------");
+
+        result = new int[list.size()];
+
+        for(int i = 0; i < result.length; i++) {
+            result[i] = list.get(i);
+        }
+
+        return result;
     }
 
     /**
