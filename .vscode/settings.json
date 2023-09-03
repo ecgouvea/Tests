@@ -1,0 +1,10 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "c:\\Users\\egouvea\\Downloads\\jaxb-api-2.3.1.jar",
+        "c:\\Users\\egouvea\\Downloads\\jackson-annotations-2.15.2.jar",
+        "c:\\Users\\egouvea\\Downloads\\jackson-databind-2.15.2.jar",
+        "c:\\Users\\egouvea\\Downloads\\jackson-core-2.15.2.jar",
+        "c:\\Users\\egouvea\\Downloads\\jjwt-0.9.1.jar"
+    ]
+}
