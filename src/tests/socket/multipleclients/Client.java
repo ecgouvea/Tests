@@ -15,7 +15,7 @@ import java.util.List;
 public class Client {
     public static void main(String[] args) {
         String serverAddress = "localhost"; // Server's IP address or hostname
-        int serverPort = 12345; // Server's port number
+        int serverPort = 5555; //12345; // Server's port number
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in, Charset.defaultCharset()));
         String line = null;
 

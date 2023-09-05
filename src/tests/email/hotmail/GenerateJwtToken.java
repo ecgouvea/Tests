@@ -1,7 +1,7 @@
 package tests.email.hotmail;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+//import io.jsonwebtoken.Jwts;
+//import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.time.Instant;
 import java.util.Date;
@@ -30,10 +30,11 @@ public class GenerateJwtToken {
         claims.put("exp", new Date(nowMillis + 3600000)); // 1 hour validity
         claims.put("iat", now);
 
-        return Jwts.builder()
-                .setClaims(claims)
-                .signWith(SignatureAlgorithm.HS256, clientSecret)
-                .compact();
+        return null;
+//                Jwts.builder()
+//                .setClaims(claims)
+//                .signWith(SignatureAlgorithm.HS256, clientSecret)
+//                .compact();
     }
 }
 

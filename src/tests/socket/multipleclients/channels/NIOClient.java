@@ -14,11 +14,13 @@ public class NIOClient {
 
     public static void main(String[] args) {
         String serverAddress = "localhost"; // Server's IP address or hostname
-        int serverPort = 12345; // Server's port number
+        int serverPort = 5555; //12345; // Server's port number
 
         try {
             // Create a SocketChannel and connect to the server
             SocketChannel socketChannel = SocketChannel.open();
+            socketChannel.configureBlocking(false);
+            socketChannel.socket().setTcpNoDelay(true);
             socketChannel.connect(new InetSocketAddress(serverAddress, serverPort));
             System.out.println("Connected to server.");
 
@@ -76,7 +78,11 @@ public class NIOClient {
             String message = "Task " + getId() + " from thread " + Thread.currentThread().getName();
             ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
             try {
-                socketChannel.write(buffer);
+                if (socketChannel.isConnected()/* && buffer.hasRemaining()*/) {
+                    socketChannel.write(buffer);
+                } else {
+                    System.out.printf("not yet connected (%s ms)\n", System.currentTimeMillis());
+                }
             } catch(Exception e) {
                 e.printStackTrace();
             }
