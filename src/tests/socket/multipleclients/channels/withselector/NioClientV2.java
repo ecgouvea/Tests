@@ -22,7 +22,7 @@ public class NioClientV2 {
 
         // Open a new SocketChannel so we can listen for connections
         SocketChannel accepted = SocketChannel.open(new InetSocketAddress(addr.getHostName(), port));
-        accepted.socket().setTcpNoDelay(false);
+        accepted.socket().setTcpNoDelay(true);
 
         // Configure the socket to be non-blocking as part of the new-IO library (NIO)
         SelectableChannel selectableChannel = accepted.configureBlocking(false);
@@ -46,7 +46,7 @@ public class NioClientV2 {
 
         // This is our main loop, it can be offloaded to a separate thread if wanted.
         //while (true) {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
