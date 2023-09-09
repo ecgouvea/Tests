@@ -24,8 +24,14 @@ public class NioClientV2 {
         SocketChannel accepted = SocketChannel.open(new InetSocketAddress(addr.getHostName(), port));
         accepted.socket().setTcpNoDelay(true);
 
+
         // Configure the socket to be non-blocking as part of the new-IO library (NIO)
-        SelectableChannel selectableChannel = accepted.configureBlocking(false);
+        SelectableChannel selectableChannel = null;
+        try {
+            selectableChannel = accepted.configureBlocking(false);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         // Bind our socket to the local port (5555)
 //        acceptor.connect(new InetSocketAddress(addr.getHostName(), port));
@@ -34,15 +40,19 @@ public class NioClientV2 {
 //        acceptor.socket().setReuseAddress(true);
 
         // Open our selector channel
-        Selector selector = /*SelectorProvider*/selectableChannel.provider().openSelector();
-        System.out.printf("selector.isOpen()? %s\n", selector.isOpen());
+        Selector selector = /*SelectorProvider*/ selectableChannel.provider().openSelector();
+        System.out.printf("%s selector.isOpen()? %s\n", Thread.currentThread().getName(), selector.isOpen());
 
         // Register an "Accept" event on our selector service which will let us know when sockets connect to our channel
-        SelectionKey acceptKey = /*acceptor*/selectableChannel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
+        SelectionKey acceptKey = acceptKey = selectableChannel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
+
         acceptKey.attach(new InternalServerSocketChannelClient(addr.getHostName(), accepted, acceptKey));
 
         // Set our key's interest OPs to "Accept"
         acceptKey.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
+
+
+
 
         // This is our main loop, it can be offloaded to a separate thread if wanted.
         //while (true) {
@@ -51,7 +61,10 @@ public class NioClientV2 {
                 @Override
                 public void run() {
 
-                    System.out.printf("Wait 2 second after while(true) at %s ms\n", System.currentTimeMillis());
+
+
+
+                    System.out.printf("%s Wait 2 second after while(true) at %s ms\n", Thread.currentThread().getName(), System.currentTimeMillis());
                     try {
                         TimeUnit.SECONDS.sleep(2);
                     } catch (InterruptedException e) {
@@ -64,6 +77,7 @@ public class NioClientV2 {
                         throw new RuntimeException(e);
                     }
                     Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+
 
                     while (iterator.hasNext()) {
                         SelectionKey key = (SelectionKey) iterator.next();
@@ -79,26 +93,26 @@ public class NioClientV2 {
                         InternalServerSocketChannelClient client = (InternalServerSocketChannelClient) key.attachment();
                         try {
 
-                            System.out.printf("key.isValid()? %s\n", key.isValid());
-                            System.out.printf("key.isConnectable()? %s\n", key.isConnectable());
-                            System.out.printf("key.isAcceptable()? %s\n", key.isAcceptable());
-                            System.out.printf("key.isWritable()? %s\n", key.isWritable());
-                            System.out.printf("key.isReadable()? %s\n", key.isReadable());
+                            System.out.printf("%s key.isValid()? %s\n", Thread.currentThread().getName(), key.isValid());
+                            System.out.printf("%s key.isConnectable()? %s\n", Thread.currentThread().getName(), key.isConnectable());
+                            System.out.printf("%s key.isAcceptable()? %s\n", Thread.currentThread().getName(), key.isAcceptable());
+                            System.out.printf("%s key.isWritable()? %s\n", Thread.currentThread().getName(), key.isWritable());
+                            System.out.printf("%s key.isReadable()? %s\n", Thread.currentThread().getName(), key.isReadable());
 
                             if (client != null) {
                                 String message = "Sent by " + Thread.currentThread().getName() + " at " + System.currentTimeMillis() + " ms";
                                 client.sendMessage(message);
                             } else {
-                                System.out.printf("client == null for client.sendMessage at %s ms\n", System.currentTimeMillis());
+                                System.out.printf("%s client == null for client.sendMessage at %s ms\n", Thread.currentThread().getName(), System.currentTimeMillis());
                             }
 
                             if (key.isAcceptable()) {
-                                System.out.println("key.isAcceptable()");
+                                System.out.printf("%s key.isAcceptable()\n", Thread.currentThread().getName());
 //                        accept(key);
                             }
 
                             if (key.isReadable()) {
-                                System.out.println("key.isReadable()");
+                                System.out.printf("%s key.isReadable()\n", Thread.currentThread().getName());
 
                                 if (client != null) {
                                     client.handleRead();
@@ -108,7 +122,7 @@ public class NioClientV2 {
                             }
 
                             if (key.isWritable()) {
-                                System.out.println("key.isWritable()");
+                                System.out.printf("%s key.isWritable()\n", Thread.currentThread().getName());
 
                                 if (client != null) {
                                     client.handleWrite();
@@ -117,11 +131,11 @@ public class NioClientV2 {
                                 }
                             }
 
-                            System.out.printf("Wait 2 second after client.sendMessage at %s ms\n", System.currentTimeMillis());
+                            System.out.printf("%s Wait 2 second after client.sendMessage at %s ms\n", Thread.currentThread().getName(), System.currentTimeMillis());
                             TimeUnit.SECONDS.sleep(2);
 
                         } catch (Exception e) {
-                            System.out.printf("client.disconnect at %s ms\n", System.currentTimeMillis());
+                            System.out.printf("%s client.disconnect at %s ms\n", Thread.currentThread().getName(), System.currentTimeMillis());
                             e.printStackTrace();
                             // Disconnect the user if we have any errors during processing, you can add your own custom logic here
                             client.disconnect();
@@ -184,7 +198,7 @@ public class NioClientV2 {
 
         public void sendMessage(String message) {
             synchronized (bufferOut) {
-                System.out.printf("bufferOut.put '%s' at %s ms\n", message, System.currentTimeMillis());
+                System.out.printf("%s bufferOut.put '%s' at %s ms\n", Thread.currentThread().getName(), message, System.currentTimeMillis());
                 bufferOut.put(message.getBytes());
             }
         }

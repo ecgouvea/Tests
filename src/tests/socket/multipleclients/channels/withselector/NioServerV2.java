@@ -9,6 +9,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NioServerV2 {
@@ -44,6 +45,13 @@ public class NioServerV2 {
 
         // This is our main loop, it can be offloaded to a separate thread if wanted.
         while (true) {
+            System.out.printf("Wait 2 seconds at %s\n", Instant.now());
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.printf("selector.select() at %s\n", Instant.now());
             selector.select();
             Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
             while (iterator.hasNext()) {
