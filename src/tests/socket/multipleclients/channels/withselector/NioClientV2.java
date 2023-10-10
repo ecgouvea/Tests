@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.channels.spi.SelectorProvider;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -64,15 +65,25 @@ public class NioClientV2 {
 
 
 
-                    System.out.printf("%s Wait 2 second after while(true) at %s ms\n", Thread.currentThread().getName(), System.currentTimeMillis());
+                    System.out.printf("%s Wait 2 second after while(true) at %s ms\n", Thread.currentThread().getName(), Instant.now());
                     try {
                         TimeUnit.SECONDS.sleep(2);
                     } catch (InterruptedException e) {
-                        System.out.printf("InterruptedException after wait 1 second after while(true) at %s ms\n", System.currentTimeMillis());
+                        System.out.printf("InterruptedException after wait 1 second after while(true) at %s ms\n", Instant.now());
                     }
 
                     try {
-                        selector.select();
+                        int select = 0;
+
+                        while((select = selector.select()) < 1) {
+                            System.out.printf("%s selector.select = %s\n", Thread.currentThread().getName(), select);
+                            System.out.printf("%s Wait 2 second before another selector.select at %s ms\n", Thread.currentThread().getName(), Instant.now());
+                            try {
+                                TimeUnit.SECONDS.sleep(2);
+                            } catch (InterruptedException e) {
+                                System.out.printf("InterruptedException after wait 1 second after while(true) at %s ms\n", Instant.now());
+                            }
+                        }
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -86,6 +97,7 @@ public class NioClientV2 {
                         iterator.remove();
 
                         // skip any invalidated keys
+                        System.out.printf("%s key.isValid()? %s\n", Thread.currentThread().getName(), key.isValid());
                         if (!key.isValid()) {
                             continue;
                         }
@@ -93,17 +105,16 @@ public class NioClientV2 {
                         InternalServerSocketChannelClient client = (InternalServerSocketChannelClient) key.attachment();
                         try {
 
-                            System.out.printf("%s key.isValid()? %s\n", Thread.currentThread().getName(), key.isValid());
                             System.out.printf("%s key.isConnectable()? %s\n", Thread.currentThread().getName(), key.isConnectable());
                             System.out.printf("%s key.isAcceptable()? %s\n", Thread.currentThread().getName(), key.isAcceptable());
                             System.out.printf("%s key.isWritable()? %s\n", Thread.currentThread().getName(), key.isWritable());
                             System.out.printf("%s key.isReadable()? %s\n", Thread.currentThread().getName(), key.isReadable());
 
                             if (client != null) {
-                                String message = "Sent by " + Thread.currentThread().getName() + " at " + System.currentTimeMillis() + " ms";
+                                String message = "Sent by " + Thread.currentThread().getName() + " at " + Instant.now() + " ms";
                                 client.sendMessage(message);
                             } else {
-                                System.out.printf("%s client == null for client.sendMessage at %s ms\n", Thread.currentThread().getName(), System.currentTimeMillis());
+                                System.out.printf("%s client == null for client.sendMessage at %s ms\n", Thread.currentThread().getName(), Instant.now());
                             }
 
                             if (key.isAcceptable()) {
@@ -117,7 +128,7 @@ public class NioClientV2 {
                                 if (client != null) {
                                     client.handleRead();
                                 } else {
-                                    System.out.printf("client == null for client.handleRead at %s ms\n", System.currentTimeMillis());
+                                    System.out.printf("client == null for client.handleRead at %s ms\n", Instant.now());
                                 }
                             }
 
@@ -127,15 +138,15 @@ public class NioClientV2 {
                                 if (client != null) {
                                     client.handleWrite();
                                 } else {
-                                    System.out.printf("client == null for client.handleWrite at %s ms\n", System.currentTimeMillis());
+                                    System.out.printf("client == null for client.handleWrite at %s ms\n", Instant.now());
                                 }
                             }
 
-                            System.out.printf("%s Wait 2 second after client.sendMessage at %s ms\n", Thread.currentThread().getName(), System.currentTimeMillis());
+                            System.out.printf("%s Wait 2 second after client.sendMessage at %s ms\n", Thread.currentThread().getName(), Instant.now());
                             TimeUnit.SECONDS.sleep(2);
 
                         } catch (Exception e) {
-                            System.out.printf("%s client.disconnect at %s ms\n", Thread.currentThread().getName(), System.currentTimeMillis());
+                            System.out.printf("%s client.disconnect at %s ms\n", Thread.currentThread().getName(), Instant.now());
                             e.printStackTrace();
                             // Disconnect the user if we have any errors during processing, you can add your own custom logic here
                             client.disconnect();
@@ -198,7 +209,7 @@ public class NioClientV2 {
 
         public void sendMessage(String message) {
             synchronized (bufferOut) {
-                System.out.printf("%s bufferOut.put '%s' at %s ms\n", Thread.currentThread().getName(), message, System.currentTimeMillis());
+                System.out.printf("%s bufferOut.put '%s' at %s ms\n", Thread.currentThread().getName(), message, Instant.now());
                 bufferOut.put(message.getBytes());
             }
         }

@@ -45,14 +45,16 @@ public class NioServerV2 {
 
         // This is our main loop, it can be offloaded to a separate thread if wanted.
         while (true) {
-            System.out.printf("Wait 2 seconds at %s\n", Instant.now());
+            System.out.printf("Wait 2 seconds before selector.select(2_000 ms) at %s\n", Instant.now());
             try {
                 TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            System.out.printf("selector.select() at %s\n", Instant.now());
-            selector.select();
+
+            int select = selector.select(2_000);
+            System.out.printf("selector.select(2_000) = %s at %s\n", select, Instant.now());
+
             Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
             while (iterator.hasNext()) {
                 SelectionKey key = (SelectionKey) iterator.next();
@@ -133,6 +135,7 @@ public class NioServerV2 {
         }
 
         public void sendMessage(String message) {
+            System.out.printf("sendMessage '%s'\n", message);
             bufferOut.put(message.getBytes());
         }
 
@@ -157,11 +160,13 @@ public class NioServerV2 {
                 // Do something with this value
 
                 if (bufferIn.hasRemaining()) {
+                    System.out.printf("%s handleRead key.interestOps(SelectionKey.OP_READ) at %s\n", Thread.currentThread().getName(), Instant.now());
                     key.interestOps(SelectionKey.OP_READ);
                 } else {
+                    System.out.printf("%s handleRead key.interestOps(SelectionKey.OP_WRITE) at %s\n", Thread.currentThread().getName(), Instant.now());
                     key.interestOps(SelectionKey.OP_WRITE);
 
-                    sendMessage("Received '" + incomingMessage + "' at " + Instant.now());
+                    sendMessage(Thread.currentThread().getName() + " received '" + incomingMessage + "' at " + Instant.now());
                     handleWrite();
                 }
 
@@ -177,8 +182,10 @@ public class NioServerV2 {
             // If we weren't able to write the entire buffer out, make sure we alert the selector
             // so we can be notified when we are able to write more bytes to the socket
             if (bufferOut.hasRemaining()) {
-                key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                System.out.printf("%s handleWrite key.interestOps(SelectionKey.OP_WRITE) at %s\n", Thread.currentThread().getName(), Instant.now());
+                key.interestOps(SelectionKey.OP_WRITE);
             } else {
+                System.out.printf("%s handleWrite key.interestOps(SelectionKey.OP_READ) at %s\n", Thread.currentThread().getName(), Instant.now());
                 key.interestOps(SelectionKey.OP_READ);
             }
             return bytesOut;
