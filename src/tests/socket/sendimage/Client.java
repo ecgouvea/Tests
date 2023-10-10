@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,7 +43,7 @@ public class Client {
 
                     BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_RGB);
                     Graphics graphics = bufferedImage.createGraphics();
-                    graphics.drawImage(image, 0, 0, null);
+                    graphics.drawImage(image, 0, 0, 400, 400, null);
                     graphics.dispose();
                     ImageIO.write(bufferedImage, "png", bufferedOutputStream);
 
